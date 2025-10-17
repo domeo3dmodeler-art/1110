@@ -1,0 +1,24 @@
+# Тестовый Dockerfile только для 8-го шага (npm run build)
+FROM node:18-alpine AS base
+
+WORKDIR /app
+
+# Установка системных зависимостей
+RUN apk add --no-cache libc6-compat
+
+# Копирование package.json и package-lock.json из app директории
+COPY app/package*.json ./
+
+# Установка зависимостей
+RUN npm ci --only=production && npm cache clean --force
+
+# Копирование исходного кода из app директории
+COPY app/ .
+
+# Генерация Prisma клиента
+RUN npx prisma generate
+
+# ТЕСТИРУЕМ ТОЛЬКО 8-Й ШАГ - СБОРКУ NEXT.JS
+RUN npm run build
+
+

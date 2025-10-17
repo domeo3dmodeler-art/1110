@@ -1,0 +1,22 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Копируем только структуру для тестирования
+COPY app/ .
+
+# Проверяем структуру файлов
+RUN echo "=== Проверяем структуру ===" && \
+    ls -la && \
+    echo "=== Проверяем app/ ===" && \
+    ls -la app/ && \
+    echo "=== Проверяем components/ ===" && \
+    ls -la components/ && \
+    echo "=== Проверяем components/ui/ ===" && \
+    ls -la components/ui/ && \
+    echo "=== Проверяем app/app/admin/cart-demo/ ===" && \
+    ls -la app/app/admin/cart-demo/ && \
+    echo "=== Содержимое файла ===" && \
+    head -5 app/app/admin/cart-demo/page.tsx
+
+

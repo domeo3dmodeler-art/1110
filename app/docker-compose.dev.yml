@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  # PostgreSQL база данных
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: domeo_doors
+      POSTGRES_USER: domeo_user
+      POSTGRES_PASSWORD: domeo_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql/yandex_cloud_schema.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U domeo_user -d domeo_doors"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Next.js приложение в режиме разработки
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3001:3000"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://domeo_user:domeo_password@postgres:5432/domeo_doors
+      - JWT_SECRET=your-super-secret-jwt-key-change-this-in-production-min-32-chars
+      - NEXT_PUBLIC_APP_URL=http://localhost:3001
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+
+volumes:
+  postgres_data:
+
+

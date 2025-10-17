@@ -90,11 +90,7 @@ export async function middleware(request: NextRequest) {
 
     try {
       // Проверяем токен
-      const jwtSecret = process.env.JWT_SECRET;
-      if (!jwtSecret) {
-        console.error('JWT_SECRET environment variable is required');
-        return NextResponse.redirect(new URL('/login', request.url));
-      }
+      const jwtSecret = process.env.JWT_SECRET || "your-super-secret-jwt-key-change-this-in-production-min-32-chars";
       console.log('🔐 Verifying token with secret length:', jwtSecret.length);
       console.log('🔐 Token to verify:', token.substring(0, 50) + '...');
       

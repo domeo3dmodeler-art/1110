@@ -1,0 +1,34 @@
+# Dockerfile для разработки
+FROM node:18-slim
+
+# Установка рабочей директории
+WORKDIR /app
+
+# Установка системных зависимостей
+RUN apt-get update && apt-get install -y \
+    openssl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Копирование package.json и package-lock.json
+COPY package*.json ./
+
+# Установка зависимостей
+RUN npm ci
+
+# Копирование исходного кода
+COPY . .
+
+# Генерация Prisma клиента
+RUN npx prisma generate
+
+# Открытие порта
+EXPOSE 3000
+
+# Переменные окружения
+ENV NODE_ENV=development
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+# Запуск приложения в режиме разработки
+CMD ["npm", "run", "dev"]

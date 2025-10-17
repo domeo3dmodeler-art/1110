@@ -1,0 +1,56 @@
+# Простой Dockerfile для Yandex Cloud
+FROM node:18-alpine AS base
+
+# Установка рабочей директории
+WORKDIR /app
+
+# Установка системных зависимостей
+RUN apk add --no-cache libc6-compat
+
+# Копирование package.json и package-lock.json
+COPY package*.json ./
+
+# Установка зависимостей
+RUN npm ci --omit=dev && npm cache clean --force
+
+# Копирование исходного кода
+COPY . .
+
+# Генерация Prisma клиента
+RUN npx prisma generate
+
+# Сборка приложения
+RUN npm run build
+
+# Продакшн образ
+FROM node:18-alpine AS runner
+
+WORKDIR /app
+
+# Создание пользователя для безопасности
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+# Копирование необходимых файлов
+COPY --from=base /app/public ./public
+COPY --from=base /app/.next/standalone ./
+COPY --from=base /app/.next/static ./.next/static
+COPY --from=base /app/prisma ./prisma
+COPY --from=base /app/node_modules/.prisma ./node_modules/.prisma
+
+# Установка прав доступа
+RUN chown -R nextjs:nodejs /app
+USER nextjs
+
+# Открытие порта
+EXPOSE 3000
+
+# Переменные окружения
+ENV NODE_ENV=production
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+# Запуск приложения
+CMD ["node", "server.js"]
+
+

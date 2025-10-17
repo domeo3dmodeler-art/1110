@@ -1,0 +1,19 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Копируем только структуру для тестирования
+COPY app/ .
+
+# Проверяем структуру файлов
+RUN echo "=== Проверяем структуру ===" && \
+    pwd && \
+    ls -la && \
+    echo "=== Проверяем app/admin/catalog/export/ ===" && \
+    ls -la app/admin/catalog/export/ && \
+    echo "=== Проверяем components/ui/ ===" && \
+    ls -la components/ui/ && \
+    echo "=== Проверяем путь ../../../components/ui ===" && \
+    cd app/admin/catalog/export && \
+    ls -la ../../../components/ui/ || echo "Путь ../../../components/ui не найден"
+
